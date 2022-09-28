@@ -4,12 +4,13 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "node index.js"
+    "start": "nodemon index.js"
   },
   "author": "Francis Soliman Dyrhovden",
   "license": "ISC",
   "dependencies": {
     "@slack/bolt": "^3.12.1",
+    "@supabase/supabase-js": "^1.35.7",
     "dotenv": "^16.0.0"
   },
   "devDependencies": {

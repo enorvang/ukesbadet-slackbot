@@ -24,4 +24,7 @@ SLACK_BOT_TOKEN=<xoxb-...>
 - `nodemon index.js`
 - I annen terminal:
   `ngrok http 3000`
-- Hent ut url fra ngrok og verifiser url i Event Subscriptions i Slack-apps.
+- Hent ut url (https) fra ngrok
+- Gå til https://api.slack.com/apps/A041Q4DPDU4/general[https://api.slack.com/apps/A041Q4DPDU4/general]
+- Event Subscriptions -> Enable Events -> paste inn ngrok ${url}/slack/events
+- Request URL må bli verified her
