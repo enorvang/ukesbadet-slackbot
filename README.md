@@ -1,6 +1,6 @@
 # Slackbot
 
-Dette vil beskrive hvordan man setter opp en Slackbot.
+Dette vil beskrive hvordan man setter opp Slackbotten.
 
 ### Installasjon
 
@@ -21,10 +21,10 @@ SLACK_BOT_TOKEN=<xoxb-...>
 
 ### Handshake og kjøring av applikasjon
 
-- `nodemon index.js`
+- `npm run start`
 - I annen terminal:
   `ngrok http 3000`
 - Hent ut url (https) fra ngrok
-- Gå til https://api.slack.com/apps/A041Q4DPDU4/general[https://api.slack.com/apps/A041Q4DPDU4/general]
-- Event Subscriptions -> Enable Events -> paste inn ngrok ${url}/slack/events
+- Gå til [https://api.slack.com/apps/A041Q4DPDU4/general](https://api.slack.com/apps/A041Q4DPDU4/general)
+- Gå til Event Subscriptions -> Enable Events -> paste inn ${ngrok url}/slack/events
 - Request URL må bli verified her
