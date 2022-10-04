@@ -1,17 +1,16 @@
 require("dotenv").config();
 const { App, ExpressReceiver } = require("@slack/bolt");
 const { createClient } = require("@supabase/supabase-js");
-const { getWaterTemperatures, getWaterTemperature } = require("./services/temperatureService");
+const { getWaterTemperature } = require("./services/temperatureService");
+const { getScoreForUser } = require("./services/supabaseService");
+const getWeek = require("date-fns/getWeek");
 
 const supabaseClient = createClient(
   process.env.API_URL,
   process.env.PUBLIC_KEY
 );
-const handleBathInsert = (payload) => {
-  console.log("new bath", payload)
-}
 
-const DEFAULT_LOCATION_ID = 2
+const DEFAULT_LOCATION_ID = 2;
 
 const PORT = process.env.PORT || 3000;
 
@@ -24,7 +23,6 @@ const app = new App({
   receiver,
 });
 
-
 // A more generic, global error handler
 app.error((error) => {
   // Check the details of the error to handle cases where you should retry sending a message or stop the app
@@ -36,70 +34,142 @@ app.error((error) => {
   console.log(`Running on port: ${PORT}`);
 })();
 
-
 receiver.router.post("/slack/events", (req, res) => {
   if (req?.body?.challenge) res.send({ challenge });
 });
-
 
 app.command("/badet", async ({ ack, say, command }) => {
   await ack();
 
   if (!command.text.includes("@")) {
     await say(
-      `<@${command.user_id}> Du må tagge den du har badet med for å registrere badet`
+      `<@${command.user_name}> Du må tagge den du har badet med for å registrere badet`
     );
     return;
   }
-  const users = command.text.split(" ")
-    .filter((user) => user.includes("@"))
-    .map(user => user.replace("@", ""));
-  console.log("users", users)
 
-  const { data, error } = await supabaseClient
+  const usernames = command.text
+    .split(" ")
+    .filter((user) => user.includes("@"))
+    .map((user) => user.replace("@", ""));
+
+  let registerString = `<@${command.user_name}> har registrert et bad med `;
+
+  usernames.forEach((username) => {
+    registerString += `<@${username}> `;
+  });
+  await say(registerString);
+
+  usernames.push(command.user_name);
+
+  const uniqueUsernames = [...new Set(usernames)];
+
+  const { data: users, error } = await supabaseClient
     .from("users")
     .select("*")
-    .in("slack_username", users)
+    .in("slack_username", uniqueUsernames);
 
-  if (data.length > 0) {
-    console.log(data)
+  const missingUsers = uniqueUsernames.filter(
+    (x) => !users.map((x) => x.slack_username).includes(x)
+  );
+  missingUsers.forEach(async (username) => {
+    await say(
+      `<@${username}> er ikke registrert i databasen. Du må registrere deg før du kan registrere bad.`
+    );
+  });
 
-    const badeBuddy = data[0].slack_id;
-    const temperatureLocation = await getWaterTemperature(DEFAULT_LOCATION_ID);
-    
-    if(false) {
-      await supabaseClient
-      .from("baths")
-      .insert([
-        { 
-          user_slack_id: command.user_id,
-          temperature: temperatureLocation?.temperature
-         },
-        { 
-          user_slack_id: badeBuddy,
-          temperature: temperatureLocation?.temperature
-
-        },
-      ]);
-    }
-   
-
-    await say(`<@${command.user_id}> har badet med <@${badeBuddy}>!`);
+  if (users.length > 0) {
+    users.forEach(async (user) => {
+      const { data: baths, error } = await supabaseClient
+        .from("baths")
+        .select("created_at")
+        .eq("user_slack_id", user.slack_id)
+        .order("created_at", { ascending: false })
+        .limit(1);
+      if (baths.length > 0) {
+        const lastBath = baths[0];
+        const bathDate = new Date(lastBath.created_at);
+        const hasBadetThisWeek = getWeek(bathDate) === getWeek(new Date());
+        if (hasBadetThisWeek) {
+          await say(
+            `<@${user.slack_id}> har allerede badet denne uken. Du kan ikke få poeng igjen før neste uke.`
+          );
+          return;
+        } else {
+          const temperatureLocation = await getWaterTemperature(
+            DEFAULT_LOCATION_ID
+          );
+          const { data: bath, error } = await supabaseClient
+            .from("baths")
+            .insert([
+              {
+                user_slack_id: user.slack_id,
+                temperature: temperatureLocation.temperature ?? null,
+              },
+            ]);
+          if (bath) {
+            const { count } = await supabaseClient
+              .from("baths")
+              .select("*", { count: "exact" })
+              .eq("user_slack_id", user.slack_id);
+            await say(
+              `<@${user.slack_id}> har fått 1 poeng for badet sitt. Du har nå ${count} poeng.`
+            );
+          }
+        }
+      } else {
+        const temperatureLocation = await getWaterTemperature(
+          DEFAULT_LOCATION_ID
+        );
+        const { data: bath, error } = await supabaseClient
+          .from("baths")
+          .insert([
+            {
+              user_slack_id: user.slack_id,
+              temperature: temperatureLocation.temperature ?? null,
+            },
+          ]);
+        if (bath) {
+          const count = await getScoreForUser(user.slack_id);
+          await say(
+            `<@${user.slack_id}> har fått 1 poeng for badet sitt. Du har nå ${count} poeng.`
+          );
+        }
+      }
+    });
   }
 });
 
 app.command(`/score`, async ({ ack, say, command }) => {
   await ack();
-  const { count } = await supabaseClient
-    .from("baths")
-    .select("*", { count: "exact" })
-    .eq("user_slack_id", command.user_id);
-
+  const count = await getScoreForUser(command.user_id);
   await say(`<@${command.user_id}> har badet ${count} ganger`);
 });
 
+app.command(`/scoreboard`, async ({ ack, say, command }) => {
+  await ack();
+  //count baths for all users in users
+  const { data: users, error } = await supabaseClient.from("users").select("*");
+  const scoreboard = await Promise.all(
+    users.map(async (user) => {
+      const count = await getScoreForUser(user.slack_id);
+      return {
+        name: user.slack_username,
+        count,
+      };
+    })
+  );
+  //sort scoreboard by count desc and say scoreboard
+  const sortedScoreboard = scoreboard.sort((a, b) => b.count - a.count);
+  let scoreboardString = "Scoreboard: \n";
+  sortedScoreboard.forEach((user) => {
+    scoreboardString += `${user.name}: ${user.count} \n`;
+  });
+  await say(scoreboardString);
+});
+
 app.command(`/info`, async ({ ack, say, command }) => {
-  console.log("hello")
+  console.log("hello");
   await ack();
   const { channel_id } = command;
 
@@ -138,7 +208,7 @@ app.command(`/help`, async ({ ack, say }) => {
         type: "section",
         text: {
           type: "mrkdwn",
-          text: "*Kommandoer:*\n• `/info` - Info om konseptet\n• `/register` - Registrerer brukeren din i databasen\n• `/badet @<din-badebuddy>` - Registrerer et bad for deg og den du har badet med. Dette kan kun gjøres én gang per uke\n• `/score` - Viser hvor mange ganger du har badet",
+          text: "*Kommandoer:*\n• `/info` - Info om konseptet\n• `/register` - Registrerer brukeren din i databasen\n• `/badet @<dine-badebuddier>` - Registrerer et bad for deg og de du har badet med. Dette kan kun gjøres én gang per uke\n• `/score` - Viser hvor mange ganger du har badet\n• `/scoreboard` - Viser scoreboard over hvor mange ganger alle har badet",
         },
       },
     ],
@@ -162,13 +232,14 @@ app.command(`/register`, async ({ ack, say, command }) => {
   }
 });
 
-app.command('/temperature', async ({ack, say, command}) => {
+app.command("/temperature", async ({ ack, say, command }) => {
   await ack();
   const location = await getWaterTemperature(DEFAULT_LOCATION_ID);
-  const date = new Date(location?.time)
-    
-    await say(
-      `Temperatur på ${location.location_name}: ${location.temperature}\u00B0C, ${date.toLocaleString()}`
-    )
-  }
-)
+  const date = new Date(location?.time);
+
+  await say(
+    `Siste måling: ${location.location_name}: ${
+      location.temperature
+    }\u00B0C, ${date.toLocaleString()}`
+  );
+});
