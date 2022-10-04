@@ -1,11 +1,17 @@
 require("dotenv").config();
 const { App, ExpressReceiver } = require("@slack/bolt");
 const { createClient } = require("@supabase/supabase-js");
+const { getWaterTemperatures, getWaterTemperature } = require("./services/temperatureService");
 
 const supabaseClient = createClient(
   process.env.API_URL,
   process.env.PUBLIC_KEY
 );
+const handleBathInsert = (payload) => {
+  console.log("new bath", payload)
+}
+
+const DEFAULT_LOCATION_ID = 2
 
 const PORT = process.env.PORT || 3000;
 
@@ -18,14 +24,23 @@ const app = new App({
   receiver,
 });
 
+
+// A more generic, global error handler
+app.error((error) => {
+  // Check the details of the error to handle cases where you should retry sending a message or stop the app
+  console.error(error);
+});
+
 (async () => {
   await app.start(PORT);
   console.log(`Running on port: ${PORT}`);
 })();
 
+
 receiver.router.post("/slack/events", (req, res) => {
   if (req?.body?.challenge) res.send({ challenge });
 });
+
 
 app.command("/badet", async ({ ack, say, command }) => {
   await ack();
@@ -36,21 +51,38 @@ app.command("/badet", async ({ ack, say, command }) => {
     );
     return;
   }
+  const users = command.text.split(" ")
+    .filter((user) => user.includes("@"))
+    .map(user => user.replace("@", ""));
+  console.log("users", users)
 
-  const userId = command.text.split("@")[1].split("|")[0];
   const { data, error } = await supabaseClient
     .from("users")
     .select("*")
-    .eq("slack_username", userId);
+    .in("slack_username", users)
 
-  if (data.length === 1) {
+  if (data.length > 0) {
+    console.log(data)
+
     const badeBuddy = data[0].slack_id;
-    await supabaseClient
+    const temperatureLocation = await getWaterTemperature(DEFAULT_LOCATION_ID);
+    
+    if(false) {
+      await supabaseClient
       .from("baths")
       .insert([
-        { user_slack_id: command.user_id },
-        { user_slack_id: badeBuddy },
+        { 
+          user_slack_id: command.user_id,
+          temperature: temperatureLocation?.temperature
+         },
+        { 
+          user_slack_id: badeBuddy,
+          temperature: temperatureLocation?.temperature
+
+        },
       ]);
+    }
+   
 
     await say(`<@${command.user_id}> har badet med <@${badeBuddy}>!`);
   }
@@ -67,6 +99,7 @@ app.command(`/score`, async ({ ack, say, command }) => {
 });
 
 app.command(`/info`, async ({ ack, say, command }) => {
+  console.log("hello")
   await ack();
   const { channel_id } = command;
 
@@ -128,3 +161,14 @@ app.command(`/register`, async ({ ack, say, command }) => {
     );
   }
 });
+
+app.command('/temperature', async ({ack, say, command}) => {
+  await ack();
+  const location = await getWaterTemperature(DEFAULT_LOCATION_ID);
+  const date = new Date(location?.time)
+    
+    await say(
+      `Temperatur på ${location.location_name}: ${location.temperature}\u00B0C, ${date.toLocaleString()}`
+    )
+  }
+)
