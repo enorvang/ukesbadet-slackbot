@@ -182,7 +182,7 @@ app.command(`/info`, async ({ ack, say, command }) => {
             type: "section",
             text: {
               type: "mrkdwn",
-              text: `<#${channel_id}> er et engasjement som har fokus på personlig helse og å sosialisere seg med kollegaer i Stacc :star:. Konseptet går ut på å bade hver uke sammen med dine kollegaer.`,
+              text: `<#${channel_id}> er et engasjement som har fokus på personlig helse og å sosialisere seg med kollegaer i Stacc :stacc:. Konseptet går ut på å bade hver uke sammen med dine kollegaer.`,
             },
           },
           {
