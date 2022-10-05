@@ -113,7 +113,7 @@ app.command("/badet", async ({ ack, say, command }) => {
               .select("*", { count: "exact" })
               .eq("user_slack_id", user.slack_id);
             await say(
-              `<@${user.slack_id}> har fått 1 poeng for badet sitt. Du har nå ${count} poeng.`
+              `<@${user.slack_id}> har fått 1 poeng for badet sitt. Du har nå ${count} poeng. :100:`
             );
           }
         }
@@ -144,7 +144,7 @@ app.command(`/score`, async ({ ack, say, command }) => {
   await ack();
   const count = await getScoreForUser(command.user_id);
   await say(
-    `<@${command.user_id}> har badet ${count} ganger:man-tipping-hand:`
+    `<@${command.user_id}> har badet ${count} ganger :man-tipping-hand:`
   );
 });
 
@@ -163,7 +163,7 @@ app.command(`/scoreboard`, async ({ ack, say, command }) => {
   );
   //sort scoreboard by count desc and say scoreboard
   const sortedScoreboard = scoreboard.sort((a, b) => b.count - a.count);
-  let scoreboardString = "SCOREBOARD::goggles:\n";
+  let scoreboardString = "SCOREBOARD: :goggles:\n";
   sortedScoreboard.forEach((user) => {
     scoreboardString += `${user.name}: ${user.count} \n`;
   });
@@ -182,14 +182,14 @@ app.command(`/info`, async ({ ack, say, command }) => {
             type: "section",
             text: {
               type: "mrkdwn",
-              text: `<#${channel_id}> er et engasjement som har fokus på personlig helse og å sosialisere seg med kollegaer i Stacc:star:. Konseptet går ut på å bade hver uke sammen med dine kollegaer.`,
+              text: `<#${channel_id}> er et engasjement som har fokus på personlig helse og å sosialisere seg med kollegaer i Stacc :star:. Konseptet går ut på å bade hver uke sammen med dine kollegaer.`,
             },
           },
           {
             type: "section",
             text: {
               type: "mrkdwn",
-              text: "*Reglene er enkle:*\n• Man kan maks få 1 poeng per uke:one:\n• Man er nødt til å bade sammen med én eller flere kollegaer:people_holding_hands:",
+              text: "*Reglene er enkle:*\n• Man kan maks få 1 poeng per uke :one:\n• Man er nødt til å bade sammen med én eller flere kollegaer :people_holding_hands:",
             },
           },
           {
@@ -201,7 +201,7 @@ app.command(`/info`, async ({ ack, say, command }) => {
           },
         ],
         fallback:
-          "Ukesbadet er et engasjement som har fokus på personlig helse og å sosialisere seg med kollegaer i Stacc:star:. Konseptet går ut på å bade hver uke sammen med dine kollegaer",
+          "Ukesbadet er et engasjement som har fokus på personlig helse og å sosialisere seg med kollegaer i Stacc :star:. Konseptet går ut på å bade hver uke sammen med dine kollegaer",
       },
     ],
   });
@@ -217,7 +217,7 @@ app.command(`/help`, async ({ ack, say }) => {
             type: "section",
             text: {
               type: "mrkdwn",
-              text: "*Kommandoer::100:*\n• `/info` - Info om konseptet\n• `/register` - Registrerer brukeren din i databasen\n• `/badet @<dine-badebuddier>` - Registrerer et bad for deg og de du har badet med. Dette kan kun gjøres én gang per uke\n• `/score` - Viser hvor mange ganger du har badet\n• `/scoreboard` - Viser scoreboard over hvor mange ganger alle har badet\n• `/temperature` - Viser siste temperaturmåling i vannet på Marineholmen",
+              text: "*Kommandoer: :information_source:*\n• `/info` - Info om konseptet\n• `/register` - Registrerer brukeren din i databasen\n• `/badet @<dine-badebuddier>` - Registrerer et bad for deg og de du har badet med. Dette kan kun gjøres én gang per uke\n• `/score` - Viser hvor mange ganger du har badet\n• `/scoreboard` - Viser scoreboard over hvor mange ganger alle har badet\n• `/temperature` - Viser siste temperaturmåling i vannet på Marineholmen",
             },
           },
         ],
@@ -247,7 +247,7 @@ app.command(`/register`, async ({ ack, say, command }) => {
               type: "section",
               text: {
                 type: "mrkdwn",
-                text: `Hei <@${user_id}> og velkommen til <#${channel_id}>:swimmer:! Skriv \`/info\` for å lese mer om konseptet.`,
+                text: `Hei <@${user_id}> og velkommen til <#${channel_id}> :swimmer:!\nSkriv \`/info\` for å lese mer om konseptet.`,
               },
             },
           ],
@@ -264,9 +264,9 @@ app.command("/temperature", async ({ ack, say, command }) => {
   const date = new Date(location?.time);
 
   await say(
-    `Siste måling: ${location.location_name}: ${
+    `Siste måling: :cold_face:\nSted: ${location.location_name}\nTemperatur: ${
       location.temperature
-    }\u00B0C, ${date.toLocaleString()}:cold_face:`
+    }\u00B0C\nTidspunkt: ${date.toLocaleString()}`
   );
 });
 
