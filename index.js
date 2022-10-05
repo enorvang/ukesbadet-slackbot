@@ -237,9 +237,6 @@ app.command(`/register`, async ({ ack, say, command }) => {
     await supabaseClient
       .from("users")
       .insert([{ slack_id: user_id, slack_username: user_name }]);
-    await say(
-      `Hei <@${user_id}> og velkommen til <#${channel_id}>! Skriv /info for å lese mer om konseptet.`
-    );
     await say({
       attachments: [
         {
