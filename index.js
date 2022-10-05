@@ -143,7 +143,9 @@ app.command("/badet", async ({ ack, say, command }) => {
 app.command(`/score`, async ({ ack, say, command }) => {
   await ack();
   const count = await getScoreForUser(command.user_id);
-  await say(`<@${command.user_id}> har badet ${count} ganger`);
+  await say(
+    `<@${command.user_id}> har badet ${count} ganger:man-tipping-hand:`
+  );
 });
 
 app.command(`/scoreboard`, async ({ ack, say, command }) => {
@@ -161,7 +163,7 @@ app.command(`/scoreboard`, async ({ ack, say, command }) => {
   );
   //sort scoreboard by count desc and say scoreboard
   const sortedScoreboard = scoreboard.sort((a, b) => b.count - a.count);
-  let scoreboardString = "Scoreboard: \n";
+  let scoreboardString = "SCOREBOARD::goggles:\n";
   sortedScoreboard.forEach((user) => {
     scoreboardString += `${user.name}: ${user.count} \n`;
   });
@@ -187,7 +189,7 @@ app.command(`/info`, async ({ ack, say, command }) => {
             type: "section",
             text: {
               type: "mrkdwn",
-              text: "*Reglene er enkle:*\n• Man kan maks få 1 poeng per uke\n• Man er nødt til å bade sammen med én eller flere kollegaer",
+              text: "*Reglene er enkle:*\n• Man kan maks få 1 poeng per uke:one:\n• Man er nødt til å bade sammen med én eller flere kollegaer:people_holding_hands:",
             },
           },
           {
@@ -215,7 +217,7 @@ app.command(`/help`, async ({ ack, say }) => {
             type: "section",
             text: {
               type: "mrkdwn",
-              text: "*Kommandoer:*\n• `/info` - Info om konseptet\n• `/register` - Registrerer brukeren din i databasen\n• `/badet @<dine-badebuddier>` - Registrerer et bad for deg og de du har badet med. Dette kan kun gjøres én gang per uke\n• `/score` - Viser hvor mange ganger du har badet\n• `/scoreboard` - Viser scoreboard over hvor mange ganger alle har badet\n• `/temperature` - Viser siste temperaturmåling i vannet på Marineholmen",
+              text: "*Kommandoer::100:*\n• `/info` - Info om konseptet\n• `/register` - Registrerer brukeren din i databasen\n• `/badet @<dine-badebuddier>` - Registrerer et bad for deg og de du har badet med. Dette kan kun gjøres én gang per uke\n• `/score` - Viser hvor mange ganger du har badet\n• `/scoreboard` - Viser scoreboard over hvor mange ganger alle har badet\n• `/temperature` - Viser siste temperaturmåling i vannet på Marineholmen",
             },
           },
         ],
@@ -245,11 +247,11 @@ app.command(`/register`, async ({ ack, say, command }) => {
               type: "section",
               text: {
                 type: "mrkdwn",
-                text: `Hei <@${user_id}> og velkommen til <#${channel_id}>! Skriv \`/info\` for å lese mer om konseptet.`,
+                text: `Hei <@${user_id}> og velkommen til <#${channel_id}>:swimmer:! Skriv \`/info\` for å lese mer om konseptet.`,
               },
             },
           ],
-          fallback: `Hei <@${user_id}> og velkommen til <#${channel_id}>! Skriv /info for å lese mer om konseptet.`,
+          fallback: `Hei <@${user_id}> og velkommen til <#${channel_id}>:swimmer:! Skriv /info for å lese mer om konseptet.`,
         },
       ],
     });
@@ -264,7 +266,7 @@ app.command("/temperature", async ({ ack, say, command }) => {
   await say(
     `Siste måling: ${location.location_name}: ${
       location.temperature
-    }\u00B0C, ${date.toLocaleString()}`
+    }\u00B0C, ${date.toLocaleString()}:cold_face:`
   );
 });
 
