@@ -169,32 +169,36 @@ app.command(`/scoreboard`, async ({ ack, say, command }) => {
 });
 
 app.command(`/info`, async ({ ack, say, command }) => {
-  console.log("hello");
   await ack();
   const { channel_id } = command;
 
   await say({
-    blocks: [
+    attachments: [
       {
-        type: "section",
-        text: {
-          type: "mrkdwn",
-          text: `<#${channel_id}> er et engasjement som har fokus på personlig helse og å sosialisere seg med kollegaer i Stacc:star:. Konseptet går ut på å bade hver uke sammen med dine kollegaer.`,
-        },
-      },
-      {
-        type: "section",
-        text: {
-          type: "mrkdwn",
-          text: "*Reglene er enkle:*\n• Man kan maks få 1 poeng per uke\n• Man er nødt til å bade sammen med én eller flere kollegaer",
-        },
-      },
-      {
-        type: "section",
-        text: {
-          type: "mrkdwn",
-          text: "Skriv `/help` for å se en liste over kommandoer",
-        },
+        blocks: [
+          {
+            type: "section",
+            text: {
+              type: "mrkdwn",
+              text: `<#${channel_id}> er et engasjement som har fokus på personlig helse og å sosialisere seg med kollegaer i Stacc:star:. Konseptet går ut på å bade hver uke sammen med dine kollegaer.`,
+            },
+          },
+          {
+            type: "section",
+            text: {
+              type: "mrkdwn",
+              text: "*Reglene er enkle:*\n• Man kan maks få 1 poeng per uke\n• Man er nødt til å bade sammen med én eller flere kollegaer",
+            },
+          },
+          {
+            type: "section",
+            text: {
+              type: "mrkdwn",
+              text: "Skriv `/help` for å se en liste over kommandoer",
+            },
+          },
+        ],
+        fallback: "attachment fallback",
       },
     ],
   });
