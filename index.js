@@ -198,7 +198,8 @@ app.command(`/info`, async ({ ack, say, command }) => {
             },
           },
         ],
-        fallback: "attachment fallback",
+        fallback:
+          "Ukesbadet er et engasjement som har fokus på personlig helse og å sosialisere seg med kollegaer i Stacc:star:. Konseptet går ut på å bade hver uke sammen med dine kollegaer",
       },
     ],
   });
@@ -207,13 +208,19 @@ app.command(`/info`, async ({ ack, say, command }) => {
 app.command(`/help`, async ({ ack, say }) => {
   await ack();
   await say({
-    blocks: [
+    attachments: [
       {
-        type: "section",
-        text: {
-          type: "mrkdwn",
-          text: "*Kommandoer:*\n• `/info` - Info om konseptet\n• `/register` - Registrerer brukeren din i databasen\n• `/badet @<dine-badebuddier>` - Registrerer et bad for deg og de du har badet med. Dette kan kun gjøres én gang per uke\n• `/score` - Viser hvor mange ganger du har badet\n• `/scoreboard` - Viser scoreboard over hvor mange ganger alle har badet",
-        },
+        blocks: [
+          {
+            type: "section",
+            text: {
+              type: "mrkdwn",
+              text: "*Kommandoer:*\n• `/info` - Info om konseptet\n• `/register` - Registrerer brukeren din i databasen\n• `/badet @<dine-badebuddier>` - Registrerer et bad for deg og de du har badet med. Dette kan kun gjøres én gang per uke\n• `/score` - Viser hvor mange ganger du har badet\n• `/scoreboard` - Viser scoreboard over hvor mange ganger alle har badet\n• `/temperature` - Viser siste temperaturmåling i vannet på Marineholmen",
+            },
+          },
+        ],
+        fallback:
+          "Kommandoer: /info, /register, /badet, /score, /scoreboard, /temperature",
       },
     ],
   });
@@ -233,6 +240,22 @@ app.command(`/register`, async ({ ack, say, command }) => {
     await say(
       `Hei <@${user_id}> og velkommen til <#${channel_id}>! Skriv /info for å lese mer om konseptet.`
     );
+    await say({
+      attachments: [
+        {
+          blocks: [
+            {
+              type: "section",
+              text: {
+                type: "mrkdwn",
+                text: `Hei <@${user_id}> og velkommen til <#${channel_id}>! Skriv \`/info\` for å lese mer om konseptet.`,
+              },
+            },
+          ],
+          fallback: `Hei <@${user_id}> og velkommen til <#${channel_id}>! Skriv /info for å lese mer om konseptet.`,
+        },
+      ],
+    });
   }
 });
 

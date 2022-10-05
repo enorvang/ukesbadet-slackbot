@@ -28,3 +28,4 @@ SLACK_BOT_TOKEN=<xoxb-...>
 - Gå til [https://api.slack.com/apps/A041Q4DPDU4/general](https://api.slack.com/apps/A041Q4DPDU4/general)
 - Gå til Event Subscriptions -> Enable Events -> paste inn ${ngrok url}/slack/events
 - Request URL må bli verified her
+- Gå til Slash Commands -> Endre Request URL de kommandoene du skal jobbe med til ${ngrok url}/slack/events
