@@ -132,7 +132,7 @@ app.command("/badet", async ({ ack, say, command }) => {
         if (bath) {
           const count = await getScoreForUser(user.slack_id);
           await say(
-            `<@${user.slack_id}> har fått 1 poeng for badet sitt. Du har nå ${count} poeng.`
+            `<@${user.slack_id}> har fått 1 poeng for badet sitt. Du har nå ${count} poeng. :100:`
           );
         }
       }
