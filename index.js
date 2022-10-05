@@ -243,3 +243,5 @@ app.command("/temperature", async ({ ack, say, command }) => {
     }\u00B0C, ${date.toLocaleString()}`
   );
 });
+
+module.exports = app;
