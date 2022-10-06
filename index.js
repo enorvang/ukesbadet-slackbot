@@ -140,7 +140,7 @@ app.command("/badet", async ({ ack, say, command }) => {
   }
 });
 
-app.command(`/score`, async ({ ack, say, command }) => {
+app.command(`/score`, async ({ ack, say, command, client }) => {
   await ack();
   const count = await getScoreForUser(command.user_id);
   await say(
@@ -170,59 +170,55 @@ app.command(`/scoreboard`, async ({ ack, say, command }) => {
   await say(scoreboardString);
 });
 
-app.command(`/info`, async ({ ack, say, command }) => {
+app.command(`/info`, async ({ ack, say, command, client }) => {
   await ack();
-  const { channel_id } = command;
+  const { channel_id, user_id } = command;
 
-  await say({
-    attachments: [
+  client.chat.postEphemeral({
+    token: process.env.SLACK_BOT_TOKEN,
+    channel: channel_id,
+    user: user_id,
+    blocks: [
       {
-        blocks: [
-          {
-            type: "section",
-            text: {
-              type: "mrkdwn",
-              text: `<#${channel_id}> er et engasjement som har fokus på personlig helse og å sosialisere seg med kollegaer i Stacc :stacc:. Konseptet går ut på å bade hver uke sammen med dine kollegaer.`,
-            },
-          },
-          {
-            type: "section",
-            text: {
-              type: "mrkdwn",
-              text: "*Reglene er enkle:*\n• Man kan maks få 1 poeng per uke :one:\n• Man er nødt til å bade sammen med én eller flere kollegaer :people_holding_hands:",
-            },
-          },
-          {
-            type: "section",
-            text: {
-              type: "mrkdwn",
-              text: "Skriv `/help` for å se en liste over kommandoer",
-            },
-          },
-        ],
-        fallback:
-          "Ukesbadet er et engasjement som har fokus på personlig helse og å sosialisere seg med kollegaer i Stacc :star:. Konseptet går ut på å bade hver uke sammen med dine kollegaer",
+        type: "section",
+        text: {
+          type: "mrkdwn",
+          text: `<#${channel_id}> er et engasjement som har fokus på personlig helse og å sosialisere seg med kollegaer i Stacc :stacc:. Konseptet går ut på å bade hver uke sammen med dine kollegaer.`,
+        },
+      },
+      {
+        type: "section",
+        text: {
+          type: "mrkdwn",
+          text: "*Reglene er enkle:*\n• Man kan maks få 1 poeng per uke :one:\n• Man er nødt til å bade sammen med én eller flere kollegaer :people_holding_hands:",
+        },
+      },
+      {
+        type: "section",
+        text: {
+          type: "mrkdwn",
+          text: "Skriv `/help` for å se en liste over kommandoer",
+        },
       },
     ],
   });
 });
 
-app.command(`/help`, async ({ ack, say }) => {
+app.command(`/help`, async ({ ack, say, client, command }) => {
   await ack();
-  await say({
-    attachments: [
+  const { channel_id, user_id } = command;
+
+  client.chat.postEphemeral({
+    token: process.env.SLACK_BOT_TOKEN,
+    channel: channel_id,
+    user: user_id,
+    blocks: [
       {
-        blocks: [
-          {
-            type: "section",
-            text: {
-              type: "mrkdwn",
-              text: "*Kommandoer: :information_source:*\n• `/info` - Info om konseptet\n• `/register` - Registrerer brukeren din i databasen\n• `/badet @<dine-badebuddier>` - Registrerer et bad for deg og de du har badet med. Dette kan kun gjøres én gang per uke\n• `/score` - Viser hvor mange ganger du har badet\n• `/scoreboard` - Viser scoreboard over hvor mange ganger alle har badet\n• `/temperature` - Viser siste temperaturmåling i vannet på Marineholmen",
-            },
-          },
-        ],
-        fallback:
-          "Kommandoer: /info, /register, /badet, /score, /scoreboard, /temperature",
+        type: "section",
+        text: {
+          type: "mrkdwn",
+          text: "*Kommandoer: :information_source:*\n• `/info` - Info om konseptet (kun synlig for deg)\n• `/register` - Registrerer brukeren din i databasen\n• `/badet @<dine-badebuddier>` - Registrerer et bad for deg og de du har badet med. Dette kan kun gjøres én gang per uke\n• `/score` - Viser hvor mange ganger du har badet \n• `/scoreboard` - Viser scoreboard over hvor mange ganger alle har badet\n• `/temperature` - Viser siste temperaturmåling i vannet på Marineholmen",
+        },
       },
     ],
   });
