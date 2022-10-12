@@ -4,15 +4,18 @@ const { createClient } = require("@supabase/supabase-js");
 const { getWaterTemperature } = require("./services/temperatureService");
 const { getScoreForUser } = require("./services/supabaseService");
 const getWeek = require("date-fns/getWeek");
-const format = require('date-fns/format')
 const nb = require('date-fns/locale/nb')
+const {format, utcToZonedTime} = require('date-fns-tz')
+
+const DEFAULT_TIMEZONE = 'Europe/Oslo'
+const DEFAULT_LOCATION_ID = 2; //marineholmen
+
 
 const supabaseClient = createClient(
   process.env.API_URL,
   process.env.PUBLIC_KEY
 );
 
-const DEFAULT_LOCATION_ID = 2;
 
 const PORT = process.env.PORT || 3000;
 
@@ -305,13 +308,30 @@ app.command(`/register`, async ({ ack, say, command }) => {
 app.command("/temperature", async ({ ack, say, command }) => {
   await ack();
   const location = await getWaterTemperature(DEFAULT_LOCATION_ID);
-  const date = format(new Date(location?.time), "PPPp", {locale: nb});
-
+  const date = formatDate(location?.time)
+  
+  const temperature = Number(location.temperature)
+  const emoji = getTemperatureEmoji(temperature)
   await say(
-    `Siste måling: :cold_face:\nSted: ${location.location_name}\nTemperatur: ${
+    `Siste måling: ${emoji}\nSted: ${location.location_name}\nTemperatur: ${
       location.temperature
     }\u00B0C\nTidspunkt: ${date}`
   );
 });
+
+const getTemperatureEmoji = (temperature) => {
+  const coldEmoji = ':cold_face:'
+  const warmEmoji = ':hot_face:'
+  const thermometerEmoji = ':thermometer:'
+  return temperature < 10 ? coldEmoji 
+  : temperature > 15 ? warmEmoji 
+  : thermometerEmoji
+}
+
+const formatDate = (dateTimeString, timeZone = DEFAULT_TIMEZONE) => {
+  const date = new Date(dateTimeString)
+  const zonedDate = utcToZonedTime(date, timeZone)
+  return format(zonedDate, 'PPPp', {locale: nb})
+}
 
 module.exports = app;
