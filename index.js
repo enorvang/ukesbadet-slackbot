@@ -4,6 +4,8 @@ const { createClient } = require("@supabase/supabase-js");
 const { getWaterTemperature } = require("./services/temperatureService");
 const { getScoreForUser } = require("./services/supabaseService");
 const getWeek = require("date-fns/getWeek");
+const format = require('date-fns/format')
+const nb = require('date-fns/locale/nb')
 
 const supabaseClient = createClient(
   process.env.API_URL,
@@ -38,7 +40,7 @@ receiver.router.post("/slack/events", (req, res) => {
   if (req?.body?.challenge) res.send({ challenge });
 });
 
-app.command("/badet", async ({ ack, say, command }) => {
+app.command("/badet", async ({ ack, say, command, client }) => {
   await ack();
 
   if (!command.text.includes("@")) {
@@ -48,10 +50,56 @@ app.command("/badet", async ({ ack, say, command }) => {
     return;
   }
 
+  const {
+    channel_id, user_id
+  } = command
+
   const usernames = command.text
     .split(" ")
     .filter((user) => user.includes("@"))
     .map((user) => user.replace("@", ""));
+
+  const response = await client.chat.postEphemeral({
+    token: process.env.SLACK_BOT_TOKEN,
+    channel: channel_id,
+    user: user_id,
+    blocks: [
+      {
+        type: "section",
+        text: {
+          type: "mrkdwn",
+          text: "Du har registrert et bad med @francis. Er du sikker på dette?"
+        }
+      },
+      {
+        type: "actions",
+        elements: [
+          {
+            type: "button",
+            text: {
+              type: "plain_text",
+              emoji: true,
+              text: "Ja"
+            },
+            style: "primary",
+            value: "yes"
+          },
+          {
+            type: "button",
+            text: {
+              type: "plain_text",
+              emoji: true,
+              text: "Nei"
+            },
+            style: "danger",
+            value: "no",
+          }
+        ]
+      }
+    ]
+  });
+
+  console.log("response = ", response)
 
   let registerString = `<@${command.user_name}> har registrert et bad med `;
 
@@ -257,12 +305,12 @@ app.command(`/register`, async ({ ack, say, command }) => {
 app.command("/temperature", async ({ ack, say, command }) => {
   await ack();
   const location = await getWaterTemperature(DEFAULT_LOCATION_ID);
-  const date = new Date(location?.time);
+  const date = format(new Date(location?.time), "PPPp", {locale: nb});
 
   await say(
     `Siste måling: :cold_face:\nSted: ${location.location_name}\nTemperatur: ${
       location.temperature
-    }\u00B0C\nTidspunkt: ${date.toLocaleString()}`
+    }\u00B0C\nTidspunkt: ${date}`
   );
 });
 
