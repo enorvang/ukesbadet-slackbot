@@ -62,47 +62,48 @@ app.command("/badet", async ({ ack, say, command, client }) => {
     .filter((user) => user.includes("@"))
     .map((user) => user.replace("@", ""));
 
-  const response = await client.chat.postEphemeral({
-    token: process.env.SLACK_BOT_TOKEN,
-    channel: channel_id,
-    user: user_id,
-    blocks: [
-      {
-        type: "section",
-        text: {
-          type: "mrkdwn",
-          text: "Du har registrert et bad med @francis. Er du sikker på dette?"
-        }
-      },
-      {
-        type: "actions",
-        elements: [
-          {
-            type: "button",
-            text: {
-              type: "plain_text",
-              emoji: true,
-              text: "Ja"
-            },
-            style: "primary",
-            value: "yes"
-          },
-          {
-            type: "button",
-            text: {
-              type: "plain_text",
-              emoji: true,
-              text: "Nei"
-            },
-            style: "danger",
-            value: "no",
-          }
-        ]
-      }
-    ]
-  });
+    //TODO
+  // const response = await client.chat.postEphemeral({
+  //   token: process.env.SLACK_BOT_TOKEN,
+  //   channel: channel_id,
+  //   user: user_id,
+  //   blocks: [
+  //     {
+  //       type: "section",
+  //       text: {
+  //         type: "mrkdwn",
+  //         text: "Du har registrert et bad med @francis. Er du sikker på dette?"
+  //       }
+  //     },
+  //     {
+  //       type: "actions",
+  //       elements: [
+  //         {
+  //           type: "button",
+  //           text: {
+  //             type: "plain_text",
+  //             emoji: true,
+  //             text: "Ja"
+  //           },
+  //           style: "primary",
+  //           value: "yes"
+  //         },
+  //         {
+  //           type: "button",
+  //           text: {
+  //             type: "plain_text",
+  //             emoji: true,
+  //             text: "Nei"
+  //           },
+  //           style: "danger",
+  //           value: "no",
+  //         }
+  //       ]
+  //     }
+  //   ]
+  // });
 
-  console.log("response = ", response)
+  // console.log("response = ", response)
 
   let registerString = `<@${command.user_name}> har registrert et bad med `;
 
