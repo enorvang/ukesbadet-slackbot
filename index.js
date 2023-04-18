@@ -5,7 +5,7 @@ const { getWaterTemperature } = require("./services/temperatureService");
 const { getScoreForUser } = require("./services/supabaseService");
 const getWeek = require("date-fns/getWeek");
 const nb = require('date-fns/locale/nb')
-const {format, utcToZonedTime} = require('date-fns-tz')
+const { format, utcToZonedTime } = require('date-fns-tz')
 
 const DEFAULT_TIMEZONE = 'Europe/Oslo'
 const DEFAULT_LOCATION_ID = 2; //marineholmen
@@ -62,7 +62,7 @@ app.command("/badet", async ({ ack, say, command, client }) => {
     .filter((user) => user.includes("@"))
     .map((user) => user.replace("@", ""));
 
-    //TODO
+  //TODO
   // const response = await client.chat.postEphemeral({
   //   token: process.env.SLACK_BOT_TOKEN,
   //   channel: channel_id,
@@ -310,29 +310,32 @@ app.command("/temperature", async ({ ack, say, command }) => {
   await ack();
   const location = await getWaterTemperature(DEFAULT_LOCATION_ID);
   const date = formatDate(location?.time)
-  
+
   const temperature = Number(location.temperature)
   const emoji = getTemperatureEmoji(temperature)
   await say(
-    `Siste måling: ${emoji}\nSted: ${location.location_name}\nTemperatur: ${
-      location.temperature
+    `Siste måling: ${emoji}\nSted: ${location.location_name}\nTemperatur: ${location.temperature
     }\u00B0C\nTidspunkt: ${date}`
   );
 });
 
 const getTemperatureEmoji = (temperature) => {
-  const coldEmoji = ':cold_face:'
-  const warmEmoji = ':hot_face:'
-  const thermometerEmoji = ':thermometer:'
-  return temperature < 10 ? coldEmoji 
-  : temperature > 15 ? warmEmoji 
-  : thermometerEmoji
+  switch (temperature) {
+    case temperature < 5:
+      return ':cold_face:'
+    case temperature < 10:
+      return ':hot_face:'
+    case temperature < 15:
+      return ':thermometer:'
+    default:
+      return ':fire:'
+  }
 }
 
 const formatDate = (dateTimeString, timeZone = DEFAULT_TIMEZONE) => {
   const date = new Date(dateTimeString)
   const zonedDate = utcToZonedTime(date, timeZone)
-  return format(zonedDate, 'PPPp', {locale: nb})
+  return format(zonedDate, 'PPPp', { locale: nb })
 }
 
 module.exports = app;
