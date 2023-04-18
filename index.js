@@ -319,16 +319,15 @@ app.command("/temperature", async ({ ack, say, command }) => {
   );
 });
 
-const getTemperatureEmoji = (temperature) => {
-  switch (temperature) {
-    case temperature < 5:
-      return ':cold_face:'
-    case temperature < 10:
-      return ':hot_face:'
-    case temperature < 15:
-      return ':thermometer:'
-    default:
-      return ':fire:'
+function getTemperatureEmoji(temperature) {
+  if (temperature < 5) {
+    return ':cold_face:'
+  } else if (temperature < 10) {
+    return ':hot_face:'
+  } else if (temperature < 15) {
+    return ':thermometer:'
+  } else {
+    return ':fire:'
   }
 }
 
