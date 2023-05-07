@@ -141,7 +141,13 @@ app.command("/badet", async ({ ack, say, command, client }) => {
       if (baths.length > 0) {
         const lastBath = baths[0];
         const bathDate = new Date(lastBath.created_at);
-        const hasBadetThisWeek = getWeek(bathDate) === getWeek(new Date());
+        const hasBadetThisWeek =
+        getWeek(bathDate, {
+          weekStartsOn: 1,
+        }) ===
+        getWeek(new Date(), {
+          weekStartsOn: 1,
+        });
         if (hasBadetThisWeek) {
           await say(
             `<@${user.slack_id}> har allerede badet denne uken. Du kan ikke få poeng igjen før neste uke.`
