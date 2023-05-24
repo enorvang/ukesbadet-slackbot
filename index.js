@@ -4,18 +4,16 @@ const { createClient } = require("@supabase/supabase-js");
 const { getWaterTemperature } = require("./services/temperatureService");
 const { getScoreForUser } = require("./services/supabaseService");
 const getWeek = require("date-fns/getWeek");
-const nb = require('date-fns/locale/nb')
-const { format, utcToZonedTime } = require('date-fns-tz')
+const nb = require("date-fns/locale/nb");
+const { format, utcToZonedTime } = require("date-fns-tz");
 
-const DEFAULT_TIMEZONE = 'Europe/Oslo'
+const DEFAULT_TIMEZONE = "Europe/Oslo";
 const DEFAULT_LOCATION_ID = 2; //marineholmen
-
 
 const supabaseClient = createClient(
   process.env.API_URL,
   process.env.PUBLIC_KEY
 );
-
 
 const PORT = process.env.PORT || 3000;
 
@@ -53,9 +51,7 @@ app.command("/badet", async ({ ack, say, command, client }) => {
     return;
   }
 
-  const {
-    channel_id, user_id
-  } = command
+  const { channel_id, user_id } = command;
 
   const usernames = command.text
     .split(" ")
@@ -142,12 +138,12 @@ app.command("/badet", async ({ ack, say, command, client }) => {
         const lastBath = baths[0];
         const bathDate = new Date(lastBath.created_at);
         const hasBadetThisWeek =
-        getWeek(bathDate, {
-          weekStartsOn: 1,
-        }) ===
-        getWeek(new Date(), {
-          weekStartsOn: 1,
-        });
+          getWeek(bathDate, {
+            weekStartsOn: 1,
+          }) ===
+          getWeek(new Date(), {
+            weekStartsOn: 1,
+          });
         if (hasBadetThisWeek) {
           await say(
             `<@${user.slack_id}> har allerede badet denne uken. Du kan ikke få poeng igjen før neste uke.`
@@ -314,33 +310,33 @@ app.command(`/register`, async ({ ack, say, command }) => {
 
 app.command("/temperature", async ({ ack, say, command }) => {
   await ack();
+  const { user_id } = command;
   const location = await getWaterTemperature(DEFAULT_LOCATION_ID);
-  const date = formatDate(location?.time)
+  const date = formatDate(location?.time);
 
-  const temperature = Number(location.temperature)
-  const emoji = getTemperatureEmoji(temperature)
+  const temperature = Number(location.temperature);
+  const emoji = getTemperatureEmoji(temperature);
   await say(
-    `Siste måling: ${emoji}\nSted: ${location.location_name}\nTemperatur: ${location.temperature
-    }\u00B0C\nTidspunkt: ${date}`
+    `Temperatur forespurt av <@${user_id}>\nSted: ${location.location_name}\nTemperatur: ${location.temperature}\u00B0C ${emoji}\nTidspunkt: ${date}`
   );
 });
 
 function getTemperatureEmoji(temperature) {
   if (temperature < 5) {
-    return ':cold_face:'
+    return ":cold_face:";
   } else if (temperature < 10) {
-    return ':hot_face:'
+    return ":hot_face:";
   } else if (temperature < 15) {
-    return ':thermometer:'
+    return ":thermometer:";
   } else {
-    return ':fire:'
+    return ":fire:";
   }
 }
 
 const formatDate = (dateTimeString, timeZone = DEFAULT_TIMEZONE) => {
-  const date = new Date(dateTimeString)
-  const zonedDate = utcToZonedTime(date, timeZone)
-  return format(zonedDate, 'PPPp', { locale: nb })
-}
+  const date = new Date(dateTimeString);
+  const zonedDate = utcToZonedTime(date, timeZone);
+  return format(zonedDate, "PPPp", { locale: nb });
+};
 
 module.exports = app;
