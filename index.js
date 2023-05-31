@@ -343,7 +343,7 @@ app.command(`/averagetemp`, async ({ ack, say, command }) => {
   const sortedScoreboard = scoreboard.sort((a, b) => a.temp - b.temp);
   let scoreboardString = "AVERAGE TEMPERATURES: :thermometer:\n";
   sortedScoreboard.forEach((user) => {
-    scoreboardString += `${user.name}: ${user.temp} (${user.count} bad)\n`;
+    scoreboardString += `${user.name}: ${user.temp}\u00B0C (${user.count} bad)\n`;
   });
   await say(scoreboardString);
 });
