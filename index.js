@@ -337,8 +337,8 @@ app.command(`/averagetemp`, async ({ ack, say, command }) => {
       };
     })
   );
-  //sort scoreboard by temp desc and say scoreboard
-  const sortedScoreboard = scoreboard.sort((a, b) => b.temp - a.temp);
+  //sort scoreboard by temp asc and say scoreboard
+  const sortedScoreboard = scoreboard.sort((a, b) => a.temp - b.temp);
   let scoreboardString = "AVERAGE TEMPERATURES: :thermometer:\n";
   sortedScoreboard.forEach((user) => {
     scoreboardString += `${user.name}: ${user.temp} \n`;
