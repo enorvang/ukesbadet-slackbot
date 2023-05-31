@@ -331,9 +331,11 @@ app.command(`/averagetemp`, async ({ ack, say, command }) => {
   const scoreboard = await Promise.all(
     users.map(async (user) => {
       const temp = await getAverageTempForUser(user.slack_id);
+      const count = await getScoreForUser(user.slack_id);
       return {
         name: user.slack_username,
         temp,
+        count,
       };
     })
   );
@@ -341,7 +343,7 @@ app.command(`/averagetemp`, async ({ ack, say, command }) => {
   const sortedScoreboard = scoreboard.sort((a, b) => a.temp - b.temp);
   let scoreboardString = "AVERAGE TEMPERATURES: :thermometer:\n";
   sortedScoreboard.forEach((user) => {
-    scoreboardString += `${user.name}: ${user.temp} \n`;
+    scoreboardString += `${user.name}: ${user.temp} (${user.count} bad)\n`;
   });
   await say(scoreboardString);
 });
