@@ -2,7 +2,10 @@ require("dotenv").config();
 const { App, ExpressReceiver } = require("@slack/bolt");
 const { createClient } = require("@supabase/supabase-js");
 const { getWaterTemperature } = require("./services/temperatureService");
-const { getScoreForUser } = require("./services/supabaseService");
+const {
+  getScoreForUser,
+  getAverageTempForUser,
+} = require("./services/supabaseService");
 const getWeek = require("date-fns/getWeek");
 const nb = require("date-fns/locale/nb");
 const { format, utcToZonedTime } = require("date-fns-tz");
@@ -319,6 +322,28 @@ app.command("/temperature", async ({ ack, say, command }) => {
   await say(
     `Temperatur forespurt av <@${user_id}>\nSted: ${location.location_name}\nTemperatur: ${location.temperature}\u00B0C ${emoji}\nTidspunkt: ${date}`
   );
+});
+
+app.command(`/averagetemp`, async ({ ack, say, command }) => {
+  await ack();
+  //count baths for all users in users
+  const { data: users, error } = await supabaseClient.from("users").select("*");
+  const scoreboard = await Promise.all(
+    users.map(async (user) => {
+      const temp = await getAverageTempForUser(user.slack_id);
+      return {
+        name: user.slack_username,
+        temp,
+      };
+    })
+  );
+  //sort scoreboard by temp desc and say scoreboard
+  const sortedScoreboard = scoreboard.sort((a, b) => b.temp - a.temp);
+  let scoreboardString = "AVERAGE TEMPERATURES: :thermometer:\n";
+  sortedScoreboard.forEach((user) => {
+    scoreboardString += `${user.name}: ${user.temp} \n`;
+  });
+  await say(scoreboardString);
 });
 
 function getTemperatureEmoji(temperature) {
