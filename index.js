@@ -212,18 +212,23 @@ app.command(`/scoreboard`, async ({ ack, say, command }) => {
   const scoreboard = await Promise.all(
     users.map(async (user) => {
       const count = await getScoreForUser(user.slack_id);
-      return {
+      return count > 0 ? {
         name: user.slack_username,
         count,
-      };
-    })
+      } : null;
+    }).filter(Boolean)
   );
   //sort scoreboard by count desc and say scoreboard
   const sortedScoreboard = scoreboard.sort((a, b) => b.count - a.count);
-  let scoreboardString = "SCOREBOARD: :goggles:\n";
-  sortedScoreboard.forEach((user) => {
-    scoreboardString += `${user.name}: ${user.count} \n`;
-  });
+  let scoreboardString = ":diving_mask: SCOREBOARD :diving_mask:\n";
+  if (sortedScoreboard.length === 0) {
+    scoreboardString += "--- Ingen har badet enda :cry: ---"
+  } else {
+
+    sortedScoreboard.forEach((user) => {
+      scoreboardString += `${user.name}: ${user.count} \n`;
+    });
+  }
   await say(scoreboardString);
 });
 
@@ -332,12 +337,12 @@ app.command(`/averagetemp`, async ({ ack, say, command }) => {
     users.map(async (user) => {
       const temp = await getAverageTempForUser(user.slack_id);
       const count = await getScoreForUser(user.slack_id);
-      return {
+      return count > 0 ? {
         name: user.slack_username,
         temp,
         count,
-      };
-    })
+      } : null;
+    }).filter(Boolean)
   );
   //sort scoreboard by temp asc and say scoreboard
   const sortedScoreboard = scoreboard.sort((a, b) => a.temp - b.temp);
