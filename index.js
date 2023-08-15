@@ -183,7 +183,7 @@ app.command("/badet", async ({ ack, say, command, client }) => {
           .insert([
             {
               user_slack_id: user.slack_id,
-              temperature: temperatureLocation.temperature ?? null,
+              temperature: temperatureLocation?.temperature ?? null,
             },
           ]);
         if (bath) {
@@ -216,19 +216,18 @@ app.command(`/scoreboard`, async ({ ack, say, command }) => {
         name: user.slack_username,
         count,
       } : null;
-    }).filter(Boolean)
-  );
+    })
+  ).filter(Boolean);
   //sort scoreboard by count desc and say scoreboard
-  const sortedScoreboard = scoreboard.sort((a, b) => b.count - a.count);
+  const sortedScoreboard = scoreboard?.sort((a, b) => b.count - a.count);
   let scoreboardString = ":diving_mask: SCOREBOARD :diving_mask:\n";
-  if (sortedScoreboard.length === 0) {
+  if (sortedScoreboard?.length === 0) {
     scoreboardString += "--- Ingen har badet enda :cry: ---"
-  } else {
-
-    sortedScoreboard.forEach((user) => {
-      scoreboardString += `${user.name}: ${user.count} \n`;
-    });
   }
+  sortedScoreboard?.forEach((user) => {
+    scoreboardString += `${user.name}: ${user.count} \n`;
+  });
+
   await say(scoreboardString);
 });
 
